@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html id="root-html" lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Via Magica Virtual Bag</title>
+    <link rel="stylesheet" href="bulma.min.css" />
+    <script src="script.js"></script>
+  </head>
+
+  <body>
+    <div class="container mt-5">
+      <div class="columns">
+        <div class="column"></div>
+      </div>
+      <div class="columns">
+        <div class="column is-half is-offset-one-quarter">
+          <div class="card">
+            <div class="card-image">
+              <figure id="animus-img" class="image is-4by3 mt-4"></figure>
+            </div>
+            <div class="card-content">
+              <div class="media">
+                <div class="media-left">
+                  <figure id="animus-avatar" class="image is-48x48"></figure>
+                </div>
+                <div class="media-content">
+                  <p id="animus-name" class="title is-4"></p>
+                  <p id="animus-desc" class="subtitle is-6"></p>
+                </div>
+              </div>
+
+              <div class="content">
+                <progress
+                  id="progress_bar"
+                  class="progress is-primary"
+                  value="0"
+                  max="0"
+                >
+                  Loading...
+                </progress>
+                <button
+                  id="btn-get-animus"
+                  class="button is-primary"
+                  onClick="getDelayedAnimus()"
+                >
+                  Capturar Animus!
+                </button>
+                <button
+                  id="btn-reset-animus"
+                  class="button is-danger is-hidden"
+                  onClick="resetAnimus()"
+                >
+                  Liberar Animus!
+                </button>
+                <table class="table iss-hidden">
+                  <thead>
+                    <tr>
+                      <td>Tipo</td>
+                      <td>#</td>
+                    </tr>
+                  </thead>
+                  <tbody id="hint_content"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let initial = {
+        name: "Via Magica",
+        desc: "Paolo Mori",
+        img: "images/via_magica.svg",
+        bgColor: "#B7DFEC",
+      };
+      let loading = {
+        name: "Via Magica: Capturando Animus...",
+        desc: "Capturing Animus...",
+        img: "images/via_magica.svg",
+        bgColor: "#B7DFEC",
+      };
+      let air = {
+        name: "Aire",
+        desc: "Air",
+        img: "images/air.svg",
+        bgColor: "#C4BFD5",
+      };
+      let life = {
+        name: "Vida",
+        desc: "Life",
+        img: "images/life.svg",
+        bgColor: "#80BA4C",
+      };
+      let fire = {
+        name: "Fuego",
+        desc: "Fire",
+        img: "images/fire.svg",
+        bgColor: "#DC252B",
+      };
+      let earth = {
+        name: "Tierra",
+        desc: "Earth",
+        img: "images/earth.svg",
+        bgColor: "#9E7F33",
+      };
+      let water = {
+        name: "Agua",
+        desc: "Water",
+        img: "images/water.svg",
+        bgColor: "#4778C0",
+      };
+      let shadow = {
+        name: "Sombra",
+        desc: "Shadow",
+        img: "images/shadow.svg",
+        bgColor: "#42316C",
+      };
+      let wildcard = {
+        name: "Comodín",
+        desc: "Wildcard",
+        img: "images/wildcard.svg",
+        bgColor: "#F3D129",
+      };
+
+      const origAnimusList = [
+        air,
+        air,
+        air,
+        air,
+        air,
+        air,
+        water,
+        water,
+        water,
+        water,
+        water,
+        earth,
+        earth,
+        earth,
+        earth,
+        life,
+        life,
+        life,
+        shadow,
+        wildcard,
+        wildcard,
+        fire,
+        fire,
+      ];
+
+      let usedAnimus = [];
+      let animusList = [...origAnimusList];
+
+      const animusCount = animusList.length;
+
+      const showAnimus = (animus) => {
+        let name = document.getElementById("animus-name");
+        let desc = document.getElementById("animus-desc");
+        let figure = document.getElementById("animus-img");
+        let avatar = document.getElementById("animus-avatar");
+        let html = document.getElementById("root-html");
+        let img = document.createElement("img");
+        let avt = document.createElement("img");
+
+        name.innerHTML = animus.name;
+        desc.innerHTML = animus.desc;
+        img.src = animus.img;
+        avt.src = animus.img;
+
+        avatar.innerHTML = "";
+        avatar.appendChild(avt);
+
+        figure.innerHTML = "";
+        figure.appendChild(img);
+        html.style.backgroundColor = animus.bgColor;
+      };
+
+      const showHint = (animusList) => {
+        let hint_content = document.getElementById("hint_content");
+        hint_content.innerHTML = "";
+
+        Object.keys(animusList).forEach((key) => {
+          hint_content.innerHTML += `<tr><td>${key}</td><td>${animusList[key]}</td></tr>`;
+        });
+      };
+
+      const speech = (text) => {
+        let utter = new SpeechSynthesisUtterance();
+        utter.lang = "es-CO";
+        utter.text = text;
+        utter.volume = 1;
+
+        window.speechSynthesis.speak(utter);
+      };
+
+      const showReset = () => {
+        let btnGetAnimus = document.getElementById("btn-get-animus");
+        let btnResetAnimus = document.getElementById("btn-reset-animus");
+
+        btnGetAnimus.classList.add("is-hidden");
+        btnResetAnimus.classList.remove("is-hidden");
+      };
+
+      const hideReset = () => {
+        let btnGetAnimus = document.getElementById("btn-get-animus");
+        let btnResetAnimus = document.getElementById("btn-reset-animus");
+
+        btnGetAnimus.classList.remove("is-hidden");
+        btnResetAnimus.classList.add("is-hidden");
+      };
+
+      const getAnimus = () => {
+        const magicNumber = Math.floor(
+          Math.random() * animusList.length - 1 + 1
+        );
+        const animus = animusList[magicNumber];
+        usedAnimus.push(animus);
+        animusList.splice(magicNumber, 1);
+        showAnimus(animus);
+        speech(animus.name);
+
+        const hint_list = usedAnimus.reduce(
+          (a, c) => ((a[c.name] = (a[c.name] || 0) + 1), a),
+          Object.create(null)
+        );
+        debugger;
+        showHint(hint_list);
+        updateProgressBar();
+
+        if (animusList.length <= 0) {
+          showReset();
+        }
+      };
+
+      const getDelayedAnimus = () => {
+        let progress_bar = document.getElementById("progress_bar");
+        progress_bar.removeAttribute("value");
+        showAnimus(loading);
+
+        const magicNumber = (Math.random() * 3 + 1) * 1000;
+        setTimeout(() => {
+          getAnimus();
+        }, magicNumber);
+      };
+
+      const updateProgressBar = () => {
+        let progress_bar = document.getElementById("progress_bar");
+        progress_bar.innerHTML = `${usedAnimus.length}/${animusCount}`;
+        progress_bar.setAttribute("value", usedAnimus.length);
+        progress_bar.setAttribute("max", animusCount);
+      };
+
+      const resetAnimus = () => {
+        const hint_list = origAnimusList.reduce(
+          (a, c) => ((a[c.name] = (a[c.name] || 0) + 1), a),
+          Object.create(null)
+        );
+        usedAnimus = [];
+        animusList = [...origAnimusList];
+
+        showAnimus(initial);
+        showHint(hint_list);
+        hideReset();
+      };
+
+      resetAnimus();
+    </script>
+  </body>
+</html>
