@@ -6,7 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Via Magica Virtual Bag</title>
     <link rel="stylesheet" href="bulma.min.css" />
-    <script src="script.js"></script>
+    <link rel="preload" fetchpriority="high" as="image" href="images/air.svg" />
+    <link rel="preload" fetchpriority="high" as="image" href="images/life.svg" />
+    <link rel="preload" fetchpriority="high" as="image" href="images/fire.svg" />
+    <link rel="preload" fetchpriority="high" as="image" href="images/earth.svg" />
+    <link rel="preload" fetchpriority="high" as="image" href="images/water.svg" />
+    <link rel="preload" fetchpriority="high" as="image" href="images/shadow.svg" />
+    <link rel="preload" fetchpriority="high" as="image" href="images/wildcard.svg" />
   </head>
 
   <body>
@@ -190,7 +196,7 @@
 
       const speech = (text) => {
         let utter = new SpeechSynthesisUtterance();
-        utter.lang = "es-CO";
+        utter.lang = "es-US";
         utter.text = text;
         utter.volume = 1;
 
@@ -227,7 +233,6 @@
           (a, c) => ((a[c.name] = (a[c.name] || 0) + 1), a),
           Object.create(null)
         );
-        debugger;
         showHint(hint_list);
         updateProgressBar();
 
